@@ -267,6 +267,11 @@ function Call_keydown(key) {
                 }
                 result_text.textContent = result;
 
+                justDisplayed = display.textContent;
+                justExpressed = expression;
+                justResulted = String(result);
+                justCarrot = carrot;
+
                 if (justEvaluated) {
                     display1.textContent = display.textContent;
                 }
@@ -276,11 +281,8 @@ function Call_keydown(key) {
                     divider.classList.toggle("Show", true);
                     display = display2;
                 }
+
                 justEvaluated = true;
-                justDisplayed = display.textContent;
-                justExpressed = expression;
-                justResulted = String(result);
-                justCarrot = carrot;
             
                 carrot = '';
                 expression = '';
@@ -305,7 +307,7 @@ function Call_keydown(key) {
             cursor1.classList.toggle("Show", true);
             divider.classList.toggle("Show", false);
         }
-        else if (key === 'ArrowUp' && display == display2  && !justDisplayed.includes('Ans')) {
+        else if (key === 'ArrowUp' && display == display2  && (!justDisplayed.includes('Ans'))) {
             display2.textContent = justDisplayed;
             expression = justExpressed;
             expressionDisp = justDisplayed;
