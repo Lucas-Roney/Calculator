@@ -23,6 +23,8 @@ const buttonMap = {
     "cos" : "c",
     "tan" : "t",
     "mode" : "m",
+    "X,T,θ,n" : "x",
+    "sto→" : ">",
     "" : "",
 }
 
@@ -63,8 +65,11 @@ let currDisplay1 = '';
 let currDisplay2 = '';
 let currResult = '';
 
-const allowedKeys = ['0','1','2','3','4','5','6','7','8','9','.','+','-','*','/','^','(',')', '(-)', 's', 'c', 't', 'm'];
-const operators = ['+','-','*','/','^'];
+let x = 0;
+
+const allowedKeys = ['0','1','2','3','4','5','6','7','8','9',
+    '.','+','-','*','/','^','(',')', '(-)', 's', 'c', 't', 'm', 'x', '>', 'x²'];
+const operators = ['+','-','*','/','^','x²'];
 
 function countParens(str) {
     return str.split('(').length - str.split(')').length;
@@ -133,6 +138,16 @@ function Call_keydown(key) {
                 expression += '(Math.tan(';
                 carrot += '(tan(';
             }
+            else if (key == ">" && expressionDisp.at(-1) == 'x' && !expressionDisp.includes('→')) {
+                expressionDisp += '→';
+                expression += '='
+                carrot += '→';
+            }
+            else if (key == "x²") {
+                expressionDisp += '^2';
+                expression += '**2'
+                carrot += '**2';
+            }
             else if (key == "m") {
                 currDisplay1 = display1.textContent;
                 currDisplay2 = display2.textContent;
@@ -176,12 +191,12 @@ function Call_keydown(key) {
                 justMode = true;
                 return;
             }
-            else{
+            else if (key != '>') {
                 expression += key;
                 expressionDisp += key;
                 carrot += key;
             }
-            if(expression.length <= 22) {
+            if(expressionDisp.length <= 22) {
                 display.textContent = expressionDisp;
             }
             else{
@@ -207,6 +222,11 @@ function Call_keydown(key) {
                 expressionDisp = expressionDisp.slice(0, -1);
                 carrot = carrot.slice(0,-1);
             }
+            if (expressionDisp.at(-1) == '→') {
+                expression = expression.slice(0, -2);
+                expressionDisp = expressionDisp.slice(0, -1);
+                carrot = carrot.slice(0,-1);
+            }
             else {
                 expression = expression.slice(0, -1);
                 expressionDisp = expressionDisp.slice(0, -1);
@@ -224,16 +244,18 @@ function Call_keydown(key) {
         else if (key === 'Enter' || key === '=') {
             try {
                 // Evaluate safely
+                if (mode == 'degrees') {
+                    expression = expression.replaceAll('Math.sin(', 'Math.sin(Math.PI/180*');
+                    expression = expression.replaceAll('Math.cos(', 'Math.cos(Math.PI/180*');
+                    expression = expression.replaceAll('Math.tan(', 'Math.tan(Math.PI/180*');
+                }
+                expression = expression.replaceAll(')(', ')*(');
                 const parens = countParens(expression);
                 for (i = parens; i > 0; i--) {
                     expression += ')';
                 }
                 expression = expression.replace(/(\d)\(/g, '$1*(');
-                if (mode == 'degrees') {
-                    expression = expression.replace('Math.sin(', 'Math.sin(Math.PI/180*');
-                    expression = expression.replace('Math.cos(', 'Math.cos(Math.PI/180*');
-                    expression = expression.replace('Math.tan(', 'Math.tan(Math.PI/180*');
-                }
+                expression = expression.replace();
                 let result = Function('"use strict";return (' + expression + ')')();
                 result = result.toFixed(10);
                 while (result.at(-1) == '0' || result.at(-1) == '.') {
@@ -246,30 +268,24 @@ function Call_keydown(key) {
                 result_text.textContent = result;
 
                 if (justEvaluated) {
-                    justDisplayed = display.textContent;
                     display1.textContent = display.textContent;
-                    justExpressed = expression;
-                    justResulted = String(result);
-                    justCarrot = carrot;
-                    carrot = '';
-                    expression = '';
-                    expressionDisp = '';
-                    display2.textContent = '';
                 }
                 else {
                     cursor1.classList.toggle("Show", false);
                     cursor2.classList.toggle("Show", true);
                     divider.classList.toggle("Show", true);
-                    justEvaluated = true;
-                    justDisplayed = display.textContent;
-                    justExpressed = expression;
-                    justResulted = String(result);
-                    justCarrot = carrot;
-                    carrot = '';
-                    expression = '';
-                    expressionDisp = '';
                     display = display2;
                 }
+                justEvaluated = true;
+                justDisplayed = display.textContent;
+                justExpressed = expression;
+                justResulted = String(result);
+                justCarrot = carrot;
+            
+                carrot = '';
+                expression = '';
+                expressionDisp = '';
+                display2.textContent = '';
             } catch {
                 display.textContent = 'Error';
                 expression = '';
