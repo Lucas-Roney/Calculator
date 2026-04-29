@@ -287,6 +287,7 @@ function Call_keydown(key) {
         else if (key === 'Enter' || key === '=') {
             try {
                 // Evaluate safely
+                justExpressed = expression;
                 if (mode == 'degrees') {
                     expression = expression.replaceAll('Math.sin(', 'Math.sin(Math.PI/180*');
                     expression = expression.replaceAll('Math.cos(', 'Math.cos(Math.PI/180*');
@@ -313,7 +314,6 @@ function Call_keydown(key) {
                 result_text.textContent = result;
 
                 justDisplayed = display.textContent;
-                justExpressed = expression;
                 justResulted = String(result);
                 justCarrot = carrot;
 
