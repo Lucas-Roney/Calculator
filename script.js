@@ -25,10 +25,17 @@ const buttonMap = {
     "mode" : "m",
     "X,T,θ,n" : "x",
     "sto→" : ">",
+    "log" : "l",
+    "ln" : "n",
+    "√" : "r",
+    "x⁻¹" : "i",
     "" : "",
 }
 
 document.addEventListener('keydown', function(event) {
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        event.preventDefault();
+    }
     Call_keydown(event.key);
 });
 
@@ -68,8 +75,9 @@ let currResult = '';
 let x = 0;
 
 const allowedKeys = ['0','1','2','3','4','5','6','7','8','9',
-    '.','+','-','*','/','^','(',')', '(-)', 's', 'c', 't', 'm', 'x', '>', 'x²'];
-const operators = ['+','-','*','/','^','x²'];
+    '.','+','-','*','/','^','(',')', '(-)', 's', 'c', 't', 'm',
+    'x', '>', 'x²', 'l', 'n', 'r', 'i'];
+const operators = ['+','-','*','/','^','x²', 'i'];
 
 function countParens(str) {
     return str.split('(').length - str.split(')').length;
@@ -147,6 +155,26 @@ function Call_keydown(key) {
                 expressionDisp += '^2';
                 expression += '**2'
                 carrot += '**2';
+            }
+            else if (key == "l") {
+                expressionDisp += 'log(';
+                expression += 'Math.log10('
+                carrot += 'log(';
+            }
+            else if (key == "n") {
+                expressionDisp += 'ln(';
+                expression += 'Math.log('
+                carrot += 'ln(';
+            }
+            else if (key == "r") {
+                expressionDisp += '√(';
+                expression += 'Math.sqrt('
+                carrot += '√(';
+            }
+            else if (key == "i") {
+                expressionDisp += '^-1';
+                expression += '**-1'
+                carrot += '**-1';
             }
             else if (key == "m") {
                 currDisplay1 = display1.textContent;
@@ -227,12 +255,27 @@ function Call_keydown(key) {
                 expressionDisp = expressionDisp.slice(0, -1);
                 carrot = carrot.slice(0,-1);
             }
+            if (expressionDisp.at(-2) == 'g') {
+                expression = expression.slice(0, -4);
+                expressionDisp = expressionDisp.slice(0, -11);
+                carrot = carrot.slice(0,-4);
+            }
+            if (expressionDisp.at(-2) == 'n' && expressionDisp.at(-3) == 'l') {
+                expression = expression.slice(0, -3);
+                expressionDisp = expressionDisp.slice(0, -9);
+                carrot = carrot.slice(0,-3);
+            }
+            if (expressionDisp.at(-2) == '√') {
+                expression = expression.slice(0, -2);
+                expressionDisp = expressionDisp.slice(0, -10);
+                carrot = carrot.slice(0,-2);
+            }
             else {
                 expression = expression.slice(0, -1);
                 expressionDisp = expressionDisp.slice(0, -1);
                 carrot = carrot.slice(0,-1);
             }
-            if(expressionDisp.length <= 22) {
+            if (expressionDisp.length <= 22) {
                 display.textContent = expressionDisp || '';
             }
             else{
@@ -255,7 +298,9 @@ function Call_keydown(key) {
                     expression += ')';
                 }
                 expression = expression.replace(/(\d)\(/g, '$1*(');
-                expression = expression.replace();
+                expression = expression.replace(/(\d)\x/g, '$1*x');
+                expression = expression.replace('log10*', 'log10')
+                console.log(expression);
                 let result = Function('"use strict";return (' + expression + ')')();
                 result = result.toFixed(10);
                 while (result.at(-1) == '0' || result.at(-1) == '.') {
